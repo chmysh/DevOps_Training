@@ -1,0 +1,15 @@
+# DevOps_Training - Ping-Playbook.yml code
+- name: First play 
+  hosts: ubuntu1 
+  tasks:
+  - name: Ping the ubuntu1 ansible node
+    ping:
+
+- name: Second play 
+  hosts: ubuntu2 
+  tasks:
+   - name: Retrieve the IP Address of ubuntu2 ansible node
+     shell: hostname -i
+     register: ipaddress
+
+   - debug: var=ipaddress
