@@ -1,0 +1,49 @@
+# DevOps_Training - Install-nginx-playbook.yml code
+- name: This playbook will install nginx, configures web root folder, deploys custom web page
+  hosts: all
+  vars:
+    - greeting_msg: Welcome to DevOps !
+    - provisioner_tool: Docker
+    - conf_mgr_tool: Ansible
+  tasks:
+    - name: Install nginx in Ubuntu node
+      apt: name=nginx state=latest update_cache=yes
+
+    - name: Install curl utility in Ubuntu node
+      apt: name=curl state=latest
+
+    - name: Check if web page is accessible in Ubuntu node
+      shell: curl http://localhost:80
+      register: response
+      ignore_errors: yes
+
+    - debug: var=response
+
+    - name: Start the nginx web server in Ubuntu node
+      when: response.failed == true
+      shell: nginx 
+
+    - name: Retrieve IP address 
+      shell: hostname -i
+      register: ipaddress
+
+    - name: Create the custom document root folder
+      file: path=/var/html state=directory mode=0755
+
+    - name: Deploy custom web page 
+      template: src=index.html dest=/var/html/index.html
+
+    - name: Configure nginx to pick html pages from our custom document root folder
+      copy: src=default dest=/etc/nginx/sites-available/default  
+
+    - name: Restart nginx web server to apply the config changes
+      shell: nginx -s reload 
+
+    - name: Test web pages
+      shell: "curl http://localhost:{{item}}"
+      delegate_to: 127.0.0.1
+      register: output
+      with_sequence: start=8001 end=8002
+
+    - debug: var=output
+
